@@ -6,11 +6,17 @@
 #include <Wire.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BMP280.h>
+#include <OneWire.h>
+#include <DallasTemperature.h>
 
 
+#define oneWireBus 23 //uitlaat voeler op GPIO23
 #define BMP_SDA 21 // Verander dit naar de pin waarop SDA is aangesloten
 #define BMP_SCL 22 // Verander dit naar de pin waarop SCL is aangesloten
 Adafruit_BMP280 bmp; // Maak een BMP280-object
+OneWire OneWire(oneWireBus) ; // maak een oneWire object
+DallasTemperature sensors(&OneWire);
+
 //
 
 //toerenteller
@@ -27,6 +33,7 @@ unsigned long delaytime = 1000;
 SKOutput<float>* luchtdruk_output;
 SKOutput<float>* temperatuur_output;
 SKOutput<float>* rpm_output;
+SKOutput<float>* uitlaat_output;
 
 
 
@@ -35,8 +42,12 @@ SKOutput<float>* rpm_output;
 void printvalues(){
   float temperatuur = bmp.readTemperature(); // Lees de temperatuur in Celsius
   float luchtdruk = bmp.readPressure() / 100.0F; // Lees de luchtdruk in hPa (hectopascal)
+  sensors.requestTemperatures();
+  float uitlaattemp = sensors.getTempCByIndex(0);
+ 
   temperatuur_output->set_input(temperatuur);
   luchtdruk_output->set_input(luchtdruk);
+  uitlaat_output->set_input(uitlaattemp);
 
   Serial.print("Temperatuur: ");
   Serial.print(temperatuur);
@@ -44,6 +55,8 @@ void printvalues(){
   Serial.print("Luchtdruk: ");
   Serial.print(luchtdruk);
   Serial.println(" hPa");
+  Serial.print("Uitlaat temp: ");
+  Serial.println(uitlaattemp);
 }
 
 //----------------------------------------------------------------------------------- void pulseCounterISR() -----
@@ -77,12 +90,14 @@ void setup() {
             ->set_wifi("openplotter","12345678")
             ->get_app();
 
+  sensors.begin() ; //start de communicatie met de temp.voeler
   Wire.begin(BMP_SDA, BMP_SCL); // Start de I2C-communicatie
-  if (!bmp.begin(0x76)) { // Het BMP280-adres kan 0x76 of 0x77 zijn, afhankelijk van de sensor
+    if (!bmp.begin(0x76)) { // Het BMP280-adres kan 0x76 of 0x77 zijn, afhankelijk van de sensor
     Serial.println("Kon BMP280 niet vinden. Controleer de verbindingen of het adres.");
     while (1);
   }
-  
+
+    
   luchtdruk_output = new SKOutput<float>(
     "environment.inside.pressure",
     "/sensors/bmp280/pressure",
@@ -97,6 +112,11 @@ void setup() {
     "propulsion.engine1.revolutions",
     "/sensors/engine1/rpm",
     new SKMetadata("Hz","Engine RPM")
+    );
+    uitlaat_output = new SKOutput<float>(
+      "propulsion.engine1.exhaustTemperature",
+      "/sensors/engine1/exhaustTemperature",
+      new SKMetadata("C", "Uitlaat temperatuur")
     );
 
   //dit moet de laatste regel van void setup() zijn
