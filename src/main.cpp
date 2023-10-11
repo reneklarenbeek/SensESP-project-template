@@ -20,6 +20,11 @@ Adafruit_BMP280 bmp; // Maak een BMP280-object
 OneWire OneWire(oneWireBus) ; // maak een oneWire object
 DallasTemperature sensors(&OneWire);
 
+//WiFi settings
+String SSID = "Kingfisher";  //SSID van Openplotter netwerk
+String Password = "dit is geheim"; // WiFi wachtwoord
+String Hostname = "SensESP-motorruimte"; // Hostname
+
 //toerenteller
 const int pulsCounterPin = 36; // GPIO pin van de pulscounter
 volatile int pulseCount =0;
@@ -36,8 +41,6 @@ SKOutput<float>* luchtdruk_output;
 SKOutput<float>* temperatuur_output;
 SKOutput<float>* rpm_output;
 SKOutput<float>* uitlaat_output;
-
-
 
 //----------------------------------------------------------------------------------- void printvalues() -----
 
@@ -88,8 +91,8 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(pulsCounterPin), pulseCounterISR, FALLING);
   SensESPAppBuilder builder;
   sensesp_app = (&builder)
-            ->set_hostname("sensesp-bmp280")
-            ->set_wifi("openplotter","12345678")
+            ->set_hostname(Hostname)
+            ->set_wifi(SSID,Password)
             ->get_app();
 
   sensors.begin() ; //start de communicatie met de temp.voeler
