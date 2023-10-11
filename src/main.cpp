@@ -11,13 +11,11 @@
 
 
 #define oneWireBus 23 //uitlaat voeler op GPIO23
-#define BMP_SDA 21 // Verander dit naar de pin waarop SDA is aangesloten
-#define BMP_SCL 22 // Verander dit naar de pin waarop SCL is aangesloten
+#define BMP_SDA 21 // SDA van BMP280 sensor op GPIO21
+#define BMP_SCL 22 // SCL van BMP280 sensor op GPIO22
 Adafruit_BMP280 bmp; // Maak een BMP280-object
 OneWire OneWire(oneWireBus) ; // maak een oneWire object
 DallasTemperature sensors(&OneWire);
-
-//
 
 //toerenteller
 const int pulsCounterPin = 36; // GPIO pin van de pulscounter
