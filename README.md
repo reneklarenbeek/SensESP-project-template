@@ -1,3 +1,16 @@
+SensESP project
+
+Dallas Temperature thermometer sensor
+BMP280 sensor
+RPM pulse counter sensor in motor
+
+Schrijft waarden weg naar SignalK als:
+Environment.outside.pressure
+Environment.inside.cabintemperature
+Propulsion.engine1.exhaustTemperature
+Propulsion.engine1.revolutions
+
+Based upon
 # SensESP Project Template
 
 This repository provides a template for [SensESP](https://github.com/SignalK/SensESP/) projects.
