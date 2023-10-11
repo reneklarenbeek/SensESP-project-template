@@ -1,3 +1,6 @@
+// SenseESP-project
+// versie 1.0
+
 #include <WiFi.h>
 #include <ESPAsyncWiFiManager.h>
 #include "sensesp/signalk/signalk_output.h"
@@ -21,6 +24,7 @@ DallasTemperature sensors(&OneWire);
 const int pulsCounterPin = 36; // GPIO pin van de pulscounter
 volatile int pulseCount =0;
 unsigned long lastPulseTime=0;
+const int CorrectieFactor = 30; // Factor voor omrekenen van aantal gemeten pulses per minuut naar RPM
 int rpm=0;
 
 //sensesp
@@ -66,7 +70,7 @@ void pulseCounterISR() {
 void PulseCount(){
   unsigned long currentTime = millis();
   if (currentTime - lastPulseTime >= 1000) {
-    rpm = (pulseCount * 60) / ((currentTime - lastPulseTime) / 1000);
+    rpm = (pulseCount * 60) / ((currentTime - lastPulseTime) / 1000 / CorrectieFactor);
     rpm_output->set_input(rpm);
     lastPulseTime = currentTime;
     pulseCount = 0; 
