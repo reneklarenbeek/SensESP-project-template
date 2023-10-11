@@ -40,7 +40,7 @@ SKOutput<float>* uitlaat_output;
 //----------------------------------------------------------------------------------- void printvalues() -----
 
 void printvalues(){
-  float temperatuur = bmp.readTemperature(); // Lees de temperatuur in Celsius
+  float temperatuur = bmp.readTemperature()-2; // Lees de temperatuur in Celsius -2 graden correctie
   float luchtdruk = bmp.readPressure() / 100.0F; // Lees de luchtdruk in hPa (hectopascal)
   sensors.requestTemperatures();
   float uitlaattemp = sensors.getTempCByIndex(0);
@@ -99,9 +99,9 @@ void setup() {
 
     
   luchtdruk_output = new SKOutput<float>(
-    "environment.inside.pressure",
+    "environment.outside.pressure",
     "/sensors/bmp280/pressure",
-    new SKMetadata("hPa", "Cabin barometric pressure")
+    new SKMetadata("hPa", "Outside barometric pressure")
     );
   temperatuur_output = new SKOutput<float>(
     "environment.inside.temperature",
