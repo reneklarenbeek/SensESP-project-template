@@ -12,10 +12,13 @@
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
-
+//Aansluitingen
 #define oneWireBus 23 //uitlaat voeler op GPIO23
 #define BMP_SDA 21 // SDA van BMP280 sensor op GPIO21
 #define BMP_SCL 22 // SCL van BMP280 sensor op GPIO22
+const int pulsCounterPin = 32; // GPIO pin van de pulscounter
+
+//BMP280 en 
 Adafruit_BMP280 bmp; // Maak een BMP280-object
 OneWire OneWire(oneWireBus) ; // maak een oneWire object
 DallasTemperature sensors(&OneWire);
@@ -26,7 +29,6 @@ String Password = "dit is geheim"; // WiFi wachtwoord
 String Hostname = "SensESP-motorruimte"; // Hostname
 
 //toerenteller
-const int pulsCounterPin = 32; // GPIO pin van de pulscounter
 volatile int pulseCount =0;
 unsigned long lastPulseTime=0;
 const int CorrectieFactor = 43; // aantal gemeten pulses per minuut naar RPM, 43 tanden op tandwiel = 1 rotatie
@@ -46,22 +48,21 @@ SKOutput<float>* uitlaat_output;
 
 void printvalues(){
   float temperatuur = bmp.readTemperature()-2; // Lees de temperatuur in Celsius -2 graden correctie
-  float luchtdruk = bmp.readPressure() / 100.0F; // Lees de luchtdruk in hPa (hectopascal)
+  float luchtdruk = (bmp.readPressure() / 100.0F)-1 ; // Lees de luchtdruk in hPa (hectopascal) -1 hPa correctie
   sensors.requestTemperatures();
   float uitlaattemp = sensors.getTempCByIndex(0);
- 
   temperatuur_output->set_input(temperatuur);
   luchtdruk_output->set_input(luchtdruk);
   uitlaat_output->set_input(uitlaattemp);
 
   Serial.print("Temperatuur: ");
-  Serial.print(temperatuur);
+  Serial.print(temperatuur,0);
   Serial.println(" °C");
   Serial.print("Luchtdruk: ");
-  Serial.print(luchtdruk);
+  Serial.print(luchtdruk,0);
   Serial.println(" hPa");
   Serial.print("Uitlaat temp: ");
-  Serial.println(uitlaattemp);
+  Serial.println(uitlaattemp,0);
 }
 
 //----------------------------------------------------------------------------------- void pulseCounterISR() -----
@@ -73,7 +74,7 @@ void pulseCounterISR() {
 void PulseCount(){
   unsigned long currentTime = millis();
   if (currentTime - lastPulseTime >= 1000) {
-    rpm = (pulseCount * 60) / ((currentTime - lastPulseTime) / (1000 * 43));
+    rpm = (pulseCount * 60) / ((currentTime - lastPulseTime) * CorrectieFactor * 1000);
     rpm_output->set_input(rpm);
     lastPulseTime = currentTime;
     pulseCount = 0; 
@@ -135,7 +136,7 @@ void loop() {
   static unsigned long last_run = millis();
   if (millis() - last_run >= delaytime){
     printvalues();
-   // PulseCount();
+    PulseCount();
     last_run = millis();
   }
     app.tick();
