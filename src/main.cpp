@@ -1,5 +1,5 @@
 // SenseESP-project
-// versie 1.0
+// versie 1.1 - RPM counter werkt niet in het echt. Serial print RPM toegevoegd ter test.
 //sensESP
 #include <WiFi.h>
 #include <ESPAsyncWiFiManager.h>
@@ -24,7 +24,7 @@ OneWire OneWire(oneWireBus) ; // maak een oneWire object
 DallasTemperature sensors(&OneWire);
 
 //WiFi settings
-String SSID = "Kingfisher";  //SSID van Openplotter netwerk
+String SSID = "kingfisher";  //SSID van Openplotter netwerk
 String Password = "dit is geheim"; // WiFi wachtwoord
 String Hostname = "SensESP-motorruimte"; // Hostname
 
@@ -81,10 +81,10 @@ void PulseCount(){
   if (currentTime - lastPulseTime >= 1000) {
     rpm = (pulseCount * 60) / ((currentTime - lastPulseTime) * CorrectieFactor * 1000);
     rpm_output->set_input(rpm);
+    Serial.print("Pulsecount / RPM: ");
+    Serial.println(pulseCount+" / "+ rpm);
     lastPulseTime = currentTime;
-    pulseCount = 0; 
-    Serial.print("RPM: ");
-    Serial.println(rpm);
+    pulseCount = 0;
    }
 }
 //----------------------------------------------------------------------------------- void setup() -----
@@ -96,7 +96,7 @@ void setup() {
   SensESPAppBuilder builder;
   sensesp_app = (&builder)
             ->set_hostname(Hostname)
-            ->set_wifi(SSID,Password)
+            //->set_wifi(SSID,Password)
             ->get_app();
 
   sensors.begin() ; //start de communicatie met de temp.voeler
