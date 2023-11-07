@@ -1,11 +1,11 @@
 // SenseESP-project
-// versie 1.1 - RPM counter werkt niet in het echt. Serial print RPM toegevoegd ter test.
+// versie 1.2 - getest met pulse generator op andere ESP32. Code werkt nu.
 //sensESP
 #include <WiFi.h>
 #include <ESPAsyncWiFiManager.h>
 #include "sensesp/signalk/signalk_output.h"
 #include "sensesp_app_builder.h"
-//sensors
+                                                                                  //sensors
 #include <Wire.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BMP280.h>
@@ -13,34 +13,34 @@
 #include <DallasTemperature.h>
 
 //Aansluitingen
-#define oneWireBus 23 //uitlaat voeler op GPIO23
-#define BMP_SDA 21 // SDA van BMP280 sensor op GPIO21
-#define BMP_SCL 22 // SCL van BMP280 sensor op GPIO22
-const int pulsCounterPin = 32; // GPIO pin van de pulscounter
+#define oneWireBus              23                                                //uitlaat voeler op GPIO23
+#define BMP_SDA                 21                                                // SDA van BMP280 sensor op GPIO21
+#define BMP_SCL                 22                                                // SCL van BMP280 sensor op GPIO22
+const int pulsCounterPin =      32;                                               // GPIO pin van de pulscounter
 
 //BMP280
-Adafruit_BMP280 bmp; // Maak een BMP280-object
-OneWire OneWire(oneWireBus) ; // maak een oneWire object
+Adafruit_BMP280 bmp;                                                              // Maak een BMP280-object
+OneWire OneWire(oneWireBus) ;                                                     // maak een oneWire object
 DallasTemperature sensors(&OneWire);
 
 //WiFi settings
-String SSID = "kingfisher";  //SSID van Openplotter netwerk
-String Password = "dit is geheim"; // WiFi wachtwoord
-String Hostname = "SensESP-motorruimte"; // Hostname
+String SSID =                  "kingfisher";                                      //SSID van Openplotter netwerk
+String Password =              "dit is geheim";                                   // WiFi wachtwoord
+String Hostname =              "SensESP-motorruimte";                             // Hostname
 
 //calibraties
-const int CorrectieFactor = 43;     // toerenteller: aantal gemeten pulses per minuut naar RPM, 43 tanden op tandwiel = 1 rotatie
-const int CorrectieUitlaatTemp = 0 ;//uitlaattemperatuursensor correctie gemeten naar werkelijk
-const int CorrectieCabinTemp = 1 ;  //BMP280 temperatuursensor correctie gemeten naar werkelijk
-const int CorrectiePressure = 1 ;   //BMP280 luchtdruksensor correctie gemeten naar werkelijk
+const int CorrectieFactor =     43;                                               // toerenteller: aantal gemeten pulses per minuut naar RPM, 43 tanden op tandwiel = 1 rotatie
+const int CorrectieUitlaatTemp= 0;                                                //uitlaattemperatuursensor correctie gemeten naar werkelijk
+const int CorrectieCabinTemp =  1;                                                //BMP280 temperatuursensor correctie gemeten naar werkelijk
+const int CorrectiePressure =   1;                                                //BMP280 luchtdruksensor correctie gemeten naar werkelijk
 
 //toerenteller
-volatile int pulseCount =0;
-unsigned long lastPulseTime=0;
-int rpm=0;
+volatile int pulseCount=        0;
+unsigned long lastPulseTime=    0;
+int rpm=                        0;
 
 //
-unsigned long delaytime = 1000; // aantal milliseconden tussen metingen
+unsigned long delaytime =     1000;                                              // aantal milliseconden tussen metingen
 
 //sensesp
 using namespace sensesp;
@@ -79,19 +79,19 @@ void pulseCounterISR() {
 void PulseCount(){
   unsigned long currentTime = millis();
   if (currentTime - lastPulseTime >= 1000) {
-    rpm = (pulseCount * 60) / ((currentTime - lastPulseTime) * CorrectieFactor * 1000);
+    rpm = ((pulseCount * 1000) / ((currentTime - lastPulseTime) * CorrectieFactor ));
     rpm_output->set_input(rpm);
-    Serial.print("Pulsecount / RPM: ");
-    Serial.println(pulseCount+" / "+ rpm);
+    Serial.print("RPM: ");
+    Serial.println(rpm);
     lastPulseTime = currentTime;
     pulseCount = 0;
    }
 }
 //----------------------------------------------------------------------------------- void setup() -----
 void setup() {
-  Serial.begin(115200); // Start de seriële communicatie
-  delay(100);  // geef de seriele communicatie even de kans om te starten
-  pinMode(pulsCounterPin, INPUT_PULLUP); //pulscounter pinmode
+  Serial.begin(115200);                                                           // Start de seriële communicatie
+  delay(100);                                                                     // geef de seriele communicatie even de kans om te starten
+  pinMode(pulsCounterPin, INPUT_PULLUP);                                          //pulscounter pinmode
   attachInterrupt(digitalPinToInterrupt(pulsCounterPin), pulseCounterISR, FALLING);
   SensESPAppBuilder builder;
   sensesp_app = (&builder)
@@ -99,14 +99,14 @@ void setup() {
             //->set_wifi(SSID,Password)
             ->get_app();
 
-  sensors.begin() ; //start de communicatie met de temp.voeler
-  Wire.begin(BMP_SDA, BMP_SCL); // Start de I2C-communicatie
-    if (!bmp.begin(0x76)) { // Het BMP280-adres kan 0x76 of 0x77 zijn, afhankelijk van de sensor
+  sensors.begin() ;                                                               //start de communicatie met de temp.voeler
+  Wire.begin(BMP_SDA, BMP_SCL);                                                   // Start de I2C-communicatie
+    if (!bmp.begin(0x76)) {                                                       // Het BMP280-adres kan 0x76 of 0x77 zijn, afhankelijk van de sensor
     Serial.println("Kon BMP280 niet vinden. Controleer de verbindingen of het adres.");
     while (1);
   }
 
-  //signalK keys  
+                                                                                  //signalK keys  
   luchtdruk_output = new SKOutput<float>(
     "environment.outside.pressure",
     "/sensors/bmp280/pressure",
@@ -128,7 +128,7 @@ void setup() {
       new SKMetadata("C", "Uitlaat temperatuur")
     );
 
-  //dit moet de laatste regel van void setup() zijn
+                                                                                  //dit moet de laatste regel van void setup() zijn
   sensesp_app->start();
 
 }
