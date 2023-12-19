@@ -53,7 +53,7 @@ SKOutput<float>* uitlaat_output;
 //----------------------------------------------------------------------------------- void printvalues() -----
 void printvalues(){
   float temperatuur = bmp.readTemperature() - CorrectieCabinTemp ; // Lees de temperatuur in Celsius
-  float luchtdruk = (bmp.readPressure() / 100.0F) - CorrectiePressure ; // Lees de luchtdruk in hPa (hectopascal)
+  float luchtdruk = (bmp.readPressure()) - CorrectiePressure ; // Lees de luchtdruk in hPa (hectopascal)
   sensors.requestTemperatures();
   float uitlaattemp = sensors.getTempCByIndex(0)- CorrectieUitlaatTemp; // lees temperatuur van dallastemperature in Celcius
   temperatuur_output->set_input(temperatuur);
