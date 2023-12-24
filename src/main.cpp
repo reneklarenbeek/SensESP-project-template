@@ -52,10 +52,10 @@ SKOutput<float>* uitlaat_output;
 
 //----------------------------------------------------------------------------------- void printvalues() -----
 void printvalues(){
-  float temperatuur = bmp.readTemperature() - CorrectieCabinTemp ; // Lees de temperatuur in Celsius
-  float luchtdruk = (bmp.readPressure()) - CorrectiePressure ; // Lees de luchtdruk in hPa (hectopascal)
+  float temperatuur = bmp.readTemperature() - CorrectieCabinTemp ;                // Lees de temperatuur in Celsius
+  float luchtdruk = (bmp.readPressure()) - CorrectiePressure ;                // Lees de luchtdruk in Pa
   sensors.requestTemperatures();
-  float uitlaattemp = sensors.getTempCByIndex(0)- CorrectieUitlaatTemp; // lees temperatuur van dallastemperature in Celcius
+  float uitlaattemp = sensors.getTempCByIndex(0)- CorrectieUitlaatTemp;           // lees temperatuur van dallastemperature in Celcius
   temperatuur_output->set_input(temperatuur);
   luchtdruk_output->set_input(luchtdruk);
   uitlaat_output->set_input(uitlaattemp);
@@ -110,7 +110,7 @@ void setup() {
   luchtdruk_output = new SKOutput<float>(
     "environment.outside.pressure",
     "/sensors/bmp280/pressure",
-    new SKMetadata("hPa", "Outside barometric pressure")
+    new SKMetadata("Pa", "Outside barometric pressure")
     );
   temperatuur_output = new SKOutput<float>(
     "environment.inside.temperature",
